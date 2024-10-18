@@ -9,4 +9,4 @@ const handleConnection = socket => {
 
 const server = net.createServer(handleConnection)
 
-server.listen(4000, '127.0.0.1')
+server.listen(80, '127.0.0.1')
