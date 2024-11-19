@@ -1,26 +1,32 @@
-import socketio
+import socket
 
-sio = socketio.Client()
+def main():
+    # Configurações do servidor
+    host = 'localhost'  # Endereço do servidor
+    port = 3000        # Porta do servidor
 
-@sio.event
-def connect():
-    print("Conectado ao servidor.")
+    # Cria um socket TCP/IP
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-@sio.event
-def message(data):
-    print(f"Mensagem recebida: {data}")
-    
-@sio.event
-def disconnect():
-    print("Desconectado do servidor.")
-try:
+    try:
+        # Conecta ao servidor
+        client_socket.connect((host, port))
+        print("Conectado ao servidor.")
 
-    sio.connect('http://localhost:3000')
-    print("Conexão bem-sucedida!")
+        while True:
+            # Recebe dados do servidor
+            data = client_socket.recv(1024)
+            if not data:
+                break
+            print(f"Mensagem recebida: {data.decode()}")
 
-    sio.emit('custom_event', {'message': 'Olá do cliente Python!'})
+    except Exception as e:
+        print(f"Erro: {e}")
 
-    sio.wait()
+    finally:
+        # Fecha a conexão
+        client_socket.close()
+        print("Desconectado do servidor.")
 
-except Exception as e:
-    print(f"Erro ao conectar: {e}")
+if __name__ == "__main__":
+    main()
