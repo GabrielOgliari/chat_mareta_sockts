@@ -43,7 +43,7 @@ def client_list(data):
         option = int(input("Select an option: "))
         match option:
             case 1:
-                send_mensagem(selected_client)
+                send_message(selected_client)
             case 2:
                 print("video call")
             case 3:
@@ -55,7 +55,7 @@ def client_list(data):
 
 @sio.event
 def private_message(data):
-    print(f"Private message from {data['from']}: {data['message']}")
+    print(f"\nPrivate message from {data['from']}: {data['message']}")
 
 @sio.event
 def broadcast_message(data):
@@ -66,7 +66,7 @@ def disconnect():
     print("Disconnected from server")
 
 
-def send_mensagem(cliente):
+def send_message(cliente):
     message = ""
     print("Type 'exit' to return to the menu.")
     input("Press Enter to continue...")
@@ -82,17 +82,18 @@ def menu():
     print("3. Exit")
     try:
         option = int(input("Select an option: "))
-        if option == 1:
-            message = input("Enter the broadcast message: ")
-            sio.emit('broadcast_message', message)
-        elif option == 2:
-            sio.emit('get_clients')
+        match option:
+            case 1:
+                message = input("Enter the broadcast message: ")
+                sio.emit('broadcast_message', message)
+            case 2:
+                sio.emit('get_clients')       
+            case 3:
+                sio.disconnect()
+            case _:
+                print("Invalid option. Please try again.\n")
+                menu()
             
-        elif option == 3:
-            sio.disconnect()
-        else:
-            print("Invalid option. Please try again.")
-            menu()
     except ValueError:
         print("Invalid input. Please enter a valid number.")
         menu()
