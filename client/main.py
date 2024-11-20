@@ -1,4 +1,6 @@
 import socketio
+import cv2
+import base64
 
 sio = socketio.Client()
 
@@ -7,9 +9,9 @@ connected_clients = []  # Lista de IDs de clientes conectados
 @sio.event
 def connect():
     print("Connected to server")
-    sio.emit('client_message', 'Hello, server!')
-    sio.emit('get_clients')  # Solicita lista de clientes conectados
-
+    # sio.emit('get_clients')  # Solicita lista de clientes conectados
+    menu()
+    
 @sio.event
 def client_list(data):
     global connected_clients
@@ -71,6 +73,6 @@ def menu():
         print("Invalid input. Please enter a valid number.")
         menu()
 
-sio.connect('http://localhost:3000')  # Certifique-se de usar o endereço correto do servidor
+sio.connect('https://zany-xylophone-6664p9vgwj63r4rr-3000.app.github.dev/')  # Certifique-se de usar o endereço correto do servidor
 sio.wait()
 

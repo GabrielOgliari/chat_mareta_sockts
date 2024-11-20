@@ -9,17 +9,44 @@ const io = new Server(3000, {
 
 console.log("Servidor Socket.IO rodando na porta 3000");
 
+const clients = {}; // Armazena os clientes conectados
+
 io.on("connection", (socket) => {
   console.log("Cliente conectado:", socket.id);
 
-  socket.emit("server_message", "Bem-vindo ao servidor Socket.IO!");
+  // Armazena o cliente no objeto
+  clients[socket.id] = { id: socket.id };
 
+  // // Envia mensagem de boas-vindas
+  // socket.emit("server_message", "Bem-vindo ao servidor Socket.IO!");
+
+  // Envia lista de clientes conectados para o cliente que solicitou
+  socket.on("get_clients", () => {
+    const otherClients = Object.keys(clients).filter((id) => id !== socket.id);
+    socket.emit("client_list", otherClients);
+  });
+
+  // Mensagem privada para um cliente específico
+  socket.on("private_message", ({ to, message }) => {
+    if (clients[to]) {
+      io.to(to).emit("private_message", {
+        from: socket.id,
+        message,
+      });
+    } else {
+      socket.emit("error", "Cliente não encontrado ou desconectado");
+    }
+  });
+
+  socket.on("send_image");
+  // Broadcast para todos os clientes (exceto o remetente)
   socket.on("client_message", (data) => {
     socket.broadcast.emit("broadcast_message", `Broadcast: ${data}`);
   });
 
-  socket.on("frame_share", (data) => {});
+  // Remove o cliente do registro ao desconectar
   socket.on("disconnect", () => {
     console.log("Cliente desconectado:", socket.id);
+    delete clients[socket.id];
   });
 });
