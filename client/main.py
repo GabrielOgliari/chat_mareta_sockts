@@ -2,10 +2,18 @@ import socketio
 import cv2
 import base64
 import numpy as np
+import threading
+import time
 
 sio = socketio.Client()
 
 connected_clients = []  # Lista de IDs de clientes conectados
+image_queue = []  # Lista para armazenar as imagens recebidas
+lock = threading.Lock()  # Para proteger o acesso à lista em threads
+
+def stop_running():
+    global running
+    running = False
 
 @sio.event
 def connect():
@@ -13,20 +21,17 @@ def connect():
     # sio.emit('get_clients')  # Solicita lista de clientes conectados
     menu()
 
-@sio.on('receive_image')
-def on_image(data):
-    # Decodifica a imagem recebida
+@sio.event
+def receive_image(data):
+    """
+    Evento chamado ao receber uma imagem.
+    """
     img_base64 = data['image']
-    img_buffer = base64.b64decode(img_base64)
+    with lock:  # Protege o acesso à fila de imagens
+        image_queue.append(img_base64)
+    print(f"Imagem adicionada à fila. Total na fila: {len(image_queue)}")
 
-    # Converte o buffer em uma imagem numpy
-    img_array = np.frombuffer(img_buffer, dtype=np.uint8)
-    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
-    # Exibe a imagem
-    cv2.imshow('Recebendo imagem', img)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        sio.disconnect()
 
 @sio.event
 def client_list(data):
@@ -114,7 +119,33 @@ def frame_share(cliente):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+
     cap.release()
+    cv2.destroyAllWindows()
+
+def process_images():
+    """
+    Thread que monitora a fila de imagens, decodifica e exibe.
+    """
+    while True:
+        if image_queue:
+            with lock:  # Garante que apenas uma thread acesse a fila
+                image_data = image_queue.pop(0)  # Remove a imagem mais antiga da fila
+
+            # Decodifica a imagem
+            img_buffer = base64.b64decode(image_data)
+            img_array = np.frombuffer(img_buffer, dtype=np.uint8)
+            img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+
+            if img is not None:
+                cv2.imshow('Recebendo imagens', img)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+            else:
+                print("Erro ao decodificar imagem")
+        else:
+            time.sleep(0.1)  # Aguarda um pouco se não houver imagens
+
     cv2.destroyAllWindows()
 
 def menu():
@@ -139,7 +170,12 @@ def menu():
         print("Invalid input. Please enter a valid number.")
         menu()
 
+thread = threading.Thread(target=process_images, daemon=True)
+thread.start()
+
+
 sio.connect('https://zany-xylophone-6664p9vgwj63r4rr-3000.app.github.dev/')  # Certifique-se de usar o endereço correto do servidor
 sio.wait()
-menu()
+
+
 
