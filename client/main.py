@@ -1,6 +1,7 @@
 import socketio
 import cv2
 import base64
+import numpy as np
 
 sio = socketio.Client()
 
@@ -11,7 +12,22 @@ def connect():
     print("Connected to server")
     # sio.emit('get_clients')  # Solicita lista de clientes conectados
     menu()
-    
+
+@sio.on('receive_image')
+def on_image(data):
+    # Decodifica a imagem recebida
+    img_base64 = data['image']
+    img_buffer = base64.b64decode(img_base64)
+
+    # Converte o buffer em uma imagem numpy
+    img_array = np.frombuffer(img_buffer, dtype=np.uint8)
+    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+
+    # Exibe a imagem
+    cv2.imshow('Recebendo imagem', img)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        sio.disconnect()
+
 @sio.event
 def client_list(data):
     print("\nConnected clients:")
@@ -46,7 +62,7 @@ def client_list(data):
             case 1:
                 send_message(selected_client)
             case 2:
-                print("video call")
+                frame_share(selected_client)
             case 3:
                 print("pranks")
             case 4:
@@ -76,6 +92,30 @@ def send_message(cliente):
         if message == "exit":
             break
         sio.emit('private_message', {'to': cliente, 'message': message})
+
+def frame_share(cliente):
+    cap = cv2.VideoCapture(0)
+
+    print("Press Q to stop...")
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Codifica a imagem em formato JPEG
+        _, buffer = cv2.imencode('.jpg', frame)
+
+        # Converte a imagem para base64
+        img_base64 = base64.b64encode(buffer).decode('utf-8')
+
+        # Envia a imagem para o servidor
+        sio.emit('send_image', {'to': cliente,'image': img_base64})
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 def menu():
     print("1. Send broadcast message")
