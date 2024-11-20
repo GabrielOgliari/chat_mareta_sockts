@@ -38,7 +38,16 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("send_image");
+  socket.on("frame_share", ({ to, image }) => {
+    if (clients[to]) {
+      io.to(to).emit("receive_image", {
+        from: socket.id,
+        image,
+      });
+    } else {
+      socket.emit("error", "Cliente não encontrado ou desconectado");
+    }
+  })
   // Broadcast para todos os clientes (exceto o remetente)
   socket.on("client_message", (data) => {
     socket.broadcast.emit("broadcast_message", `Broadcast: ${data}`);
