@@ -15,9 +15,10 @@ io.on("connection", (socket) => {
   socket.emit("server_message", "Bem-vindo ao servidor Socket.IO!");
 
   socket.on("client_message", (data) => {
-    console.log("message:", data);
+    socket.broadcast.emit("broadcast_message", `Broadcast: ${data}`);
   });
 
+  socket.on("frame_share", (data) => {});
   socket.on("disconnect", () => {
     console.log("Cliente desconectado:", socket.id);
   });
