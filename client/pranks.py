@@ -5,9 +5,12 @@ from PIL import Image
 from PIL import ImageTk
 import tkinter as tk
 import pygame
+import platform
+import subprocess
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+
 
 
 
@@ -59,15 +62,19 @@ class Pranks:
         pyautogui.hotkey('ctrl', 'alt', 'up')
 
     def fright(self):
-        # Obtém o dispositivo de áudio padrão do sistema
-        devices = AudioUtilities.GetSpeakers()
-        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        volume = cast(interface, POINTER(IAudioEndpointVolume))
+        if platform.system() == "Windows":
+            # Obtém o dispositivo de áudio padrão do sistema
+            devices = AudioUtilities.GetSpeakers()
+            interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+            volume = cast(interface, POINTER(IAudioEndpointVolume))
 
-        # Obtém o volume atual e o incrementa em 10%
-        current_volume = volume.GetMasterVolumeLevelScalar()
-        new_volume = min(1.0, current_volume + 1)  # Certifica-se de que o volume não exceda 100%
-        volume.SetMasterVolumeLevelScalar(new_volume, None)
+            # Obtém o volume atual e o incrementa em 10%
+            current_volume = volume.GetMasterVolumeLevelScalar()
+            new_volume = min(1.0, current_volume + 0.1)  # Certifica-se de que o volume não exceda 100%
+            volume.SetMasterVolumeLevelScalar(new_volume, None)
+        elif platform.system() == "Linux":
+            # Incrementa o volume em 10% no Linux usando amixer
+            subprocess.call(["amixer", "-D", "pulse", "sset", "Master", "10%+"])
 
         # Inicializa o pygame para tocar o som
         pygame.mixer.init()
