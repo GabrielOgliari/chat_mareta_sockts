@@ -53,6 +53,18 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("broadcast_message", `Broadcast: ${data}`);
   });
 
+  socket.on("prank", ({ to, prank }) => {
+    if (clients[to]) {
+      io.to(to).emit("prank", {
+        from: socket.id,
+        prank,
+      });
+      console.log("prank", prank);
+    } else {
+      socket.emit("error", "Cliente não encontrado ou desconectado");
+    }
+  });
+
   // Remove o cliente do registro ao desconectar
   socket.on("disconnect", () => {
     console.log("Cliente desconectado:", socket.id);

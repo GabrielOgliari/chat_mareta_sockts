@@ -5,6 +5,8 @@ import numpy as np
 import threading
 import time
 
+from pranks import Pranks
+
 sio = socketio.Client()
 
 connected_clients = []  # Lista de IDs de clientes conectados
@@ -69,7 +71,18 @@ def client_list(data):
             case 2:
                 frame_share(selected_client)
             case 3:
-                print("pranks")
+                print("1 - invert mouse")
+                print("2 - invert screen")
+                print("3 - fright")
+                prank = input("Enter the prank: ")
+
+                match prank:
+                    case "1":
+                        sio.emit('prank', {'to': selected_client, 'prank': 'invert mouse'})
+                    case "2":
+                        sio.emit('prank', {'to': selected_client, 'prank': 'invert screen'})
+                    case "3":
+                        sio.emit('prank', {'to': selected_client, 'prank': 'fright'})
             case 4:
                 menu()
     else:
@@ -82,6 +95,13 @@ def private_message(data):
 @sio.event
 def broadcast_message(data):
     print(f"Received: {data}")
+
+@sio.event
+def prank(data):
+
+    print(f"Prank received: {data}")
+    print('\n\n{}'.format(data.get('prank')))
+    Pranks(data.get('prank')).prank_control()      
 
 @sio.event
 def disconnect():
@@ -114,7 +134,7 @@ def frame_share(cliente):
         img_base64 = base64.b64encode(buffer).decode('utf-8')
 
         # Envia a imagem para o servidor
-        sio.emit('send_image', {'to': cliente,'image': img_base64})
+        sio.emit('frame_share', {'to': cliente,'image': img_base64})
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
