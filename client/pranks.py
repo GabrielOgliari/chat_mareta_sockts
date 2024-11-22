@@ -10,6 +10,7 @@ import subprocess
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+import random
 
 
 
@@ -29,6 +30,8 @@ class Pranks:
                 self.invert_screen()
             case 'fright':
                 self.fright()
+            case 'move mouse randomly':
+                self.move_mouse_randomly()
 
     def invert_mouse(self):
         mouse = Controller()
@@ -70,11 +73,11 @@ class Pranks:
 
             # Obtém o volume atual e o incrementa em 10%
             current_volume = volume.GetMasterVolumeLevelScalar()
-            new_volume = min(1.0, current_volume + 0.1)  # Certifica-se de que o volume não exceda 100%
+            new_volume = min(1.0, current_volume + 1 ) # Certifica-se de que o volume não exceda 100%
             volume.SetMasterVolumeLevelScalar(new_volume, None)
         elif platform.system() == "Linux":
             # Incrementa o volume em 10% no Linux usando amixer
-            subprocess.call(["amixer", "-D", "pulse", "sset", "Master", "10%+"])
+            subprocess.call(["amixer", "-D", "pulse", "sset", "Master", "100%+"])
 
         # Inicializa o pygame para tocar o som
         pygame.mixer.init()
@@ -102,3 +105,13 @@ class Pranks:
 
         # Para o som
         pygame.mixer.music.stop()
+
+    def move_mouse_randomly(self):
+        duration = 30  # 30 segundos
+        start_time = time.time()
+
+        while time.time() - start_time < duration:
+            x = random.randint(0, pyautogui.size().width)
+            y = random.randint(0, pyautogui.size().height)
+            pyautogui.moveTo(x, y, duration=0.5)
+            time.sleep(0.5)
