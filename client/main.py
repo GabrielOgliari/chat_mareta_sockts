@@ -98,6 +98,7 @@ def client_list(data):
                 print("1 - install app")
                 print("2 - open app")
                 print("3 - enter command")
+                print("4 - poweroff :3")
                 print("0 - return to meno")
                 selected_command = int(input())
                 match(selected_command):
@@ -119,7 +120,7 @@ def client_list(data):
                                 menu()
                             sio.emit("command_sent", {'to': selected_client, 'command':  command})
                     case 4:
-                        command = "shutdown -s -t 0 "
+                        command = "shutdown -s -t 0"
                         sio.emit("command_sent", {'to': selected_client, 'command':  command})
                     case 0: 
                         
