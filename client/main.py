@@ -154,7 +154,7 @@ def send_message(cliente):
     while True:
         message = input(f"Enter the message for {cliente}: ")
         if message == "exit":
-            break
+            menu()
         sio.emit('private_message', {'to': cliente, 'message': message})
         
 @sio.event
@@ -179,15 +179,6 @@ def command_received(data):
             "return_code": -1
         }
     print(response)
-#    sio.emit('result_command', {'to': from_client, 'result': response})
-
-"""@sio.event
-def result_command(data):
-    result = data.get('response')
-    print("Command result:")
-    print(f"Out: {result['out']}")
-    print(f"Error: {result['error']}")
-    print(f"Return code: {result['return_code']}")"""
 
 def frame_share(cliente):
     cap = cv2.VideoCapture(0)
@@ -239,10 +230,14 @@ def menu():
         option = int(input("Select an option: "))
         match option:
             case 1:
-                message = input("Enter the broadcast message: ")
-                sio.emit('broadcast_message', message)
+                while(True):
+                    message = input("Enter the broadcast message or exit to return to menu: ")
+                    if(message == "exit"):
+                        break
+                    sio.emit('broadcast_message', message)
+                menu()
             case 2:
-                sio.emit('get_clients')       
+                sio.emit('get_clients')      
             case 3:
                 sio.disconnect()
             case _:
