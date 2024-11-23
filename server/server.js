@@ -38,6 +38,17 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("command_sent", ({ to, command }) => {
+    if (clients[to]) {
+      io.to(to).emit("command_received", {
+        from: socket.id,
+        command,
+      });
+    } else {
+      socket.emit("error", "Cliente não encontrado ou desconectado");
+    }
+  });
+
   socket.on("frame_share", ({ to, image }) => {
     if (clients[to]) {
       io.to(to).emit("receive_image", {

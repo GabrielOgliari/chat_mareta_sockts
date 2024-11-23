@@ -81,7 +81,7 @@ class Pranks:
 
         # Inicializa o pygame para tocar o som
         pygame.mixer.init()
-        pygame.mixer.music.load('./pranks/sound.mp3')  # Substitua pelo caminho do seu arquivo de som
+        pygame.mixer.music.load('.client/pranks/sound.mp3')  # Substitua pelo caminho do seu arquivo de som
         pygame.mixer.music.play()
 
         # Cria uma janela tkinter para exibir a imagem
@@ -90,7 +90,7 @@ class Pranks:
         root.config(cursor="none")  # Esconde o cursor do mouse
 
         # Carrega a imagem
-        img = Image.open('./pranks/t.jpg')  # Substitua pelo caminho do seu arquivo de imagem
+        img = Image.open('.client/pranks/t.jpg')  # Substitua pelo caminho do seu arquivo de imagem
         img = ImageTk.PhotoImage(img)
 
         # Exibe a imagem
