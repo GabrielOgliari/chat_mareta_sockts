@@ -108,9 +108,6 @@ def broadcast_message(data):
 
 @sio.event
 def prank(data):
-
-    print(f"Prank received: {data}")
-    print('\n\n{}'.format(data.get('prank')))
     Pranks(data.get('prank')).prank_control()      
 
 @sio.event
