@@ -11,6 +11,7 @@ from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 import random
+import os
 
 
 
@@ -65,23 +66,21 @@ class Pranks:
         pyautogui.hotkey('ctrl', 'alt', 'up')
 
     def fright(self):
-        if platform.system() == "Windows":
-            # Obtém o dispositivo de áudio padrão do sistema
-            devices = AudioUtilities.GetSpeakers()
-            interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-            volume = cast(interface, POINTER(IAudioEndpointVolume))
+        som, imagem = self.get_file_paths('sound.wav', 't.jpg')
 
-            # Obtém o volume atual e o incrementa em 10%
-            current_volume = volume.GetMasterVolumeLevelScalar()
-            new_volume = min(1.0, current_volume + 1 ) # Certifica-se de que o volume não exceda 100%
-            volume.SetMasterVolumeLevelScalar(new_volume, None)
-        elif platform.system() == "Linux":
-            # Incrementa o volume em 10% no Linux usando amixer
-            subprocess.call(["amixer", "-D", "pulse", "sset", "Master", "100%+"])
+        # Obtém o dispositivo de áudio padrão do sistema
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = cast(interface, POINTER(IAudioEndpointVolume))
+
+        # Obtém o volume atual e o incrementa em 10%
+        current_volume = volume.GetMasterVolumeLevelScalar()
+        new_volume = min(1.0, current_volume + 1 ) # Certifica-se de que o volume não exceda 100%
+        volume.SetMasterVolumeLevelScalar(new_volume, None)
 
         # Inicializa o pygame para tocar o som
         pygame.mixer.init()
-        pygame.mixer.music.load('./pranks/sound.mp3')  # Substitua pelo caminho do seu arquivo de som
+        pygame.mixer.music.load(som)  # Substitua pelo caminho do seu arquivo de som
         pygame.mixer.music.play()
 
         # Cria uma janela tkinter para exibir a imagem
@@ -90,7 +89,7 @@ class Pranks:
         root.config(cursor="none")  # Esconde o cursor do mouse
 
         # Carrega a imagem
-        img = Image.open('./pranks/t.jpg')  # Substitua pelo caminho do seu arquivo de imagem
+        img = Image.open(imagem)  # Substitua pelo caminho do seu arquivo de imagem
         img = ImageTk.PhotoImage(img)
 
         # Exibe a imagem
@@ -115,3 +114,10 @@ class Pranks:
             y = random.randint(0, pyautogui.size().height)
             pyautogui.moveTo(x, y, duration=0.5)
             time.sleep(0.5)
+
+    def get_file_paths(self, file1, file2):
+        diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+        file1_path = os.path.abspath(os.path.join(diretorio_atual, file1))
+        file2_path = os.path.abspath(os.path.join(diretorio_atual, file2))
+        return file1_path, file2_path
+    
