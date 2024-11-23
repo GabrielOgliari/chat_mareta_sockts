@@ -60,7 +60,7 @@ io.on("connection", (socket) => {
     }
   });
   // Broadcast para todos os clientes (exceto o remetente)
-  socket.on("client_message", (data) => {
+  socket.on("broadcast_message", (data) => {
     socket.broadcast.emit("broadcast_message", `Broadcast: ${data}`);
   });
 
