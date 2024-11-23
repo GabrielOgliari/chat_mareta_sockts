@@ -102,9 +102,11 @@ class Pranks:
             time.sleep(0.5)
 
     def turn_off_monitor(self):
-        subprocess.call(["nircmd.exe", "monitor", "off"])
-        time.sleep(60) 
-        subprocess.call(["nircmd.exe", "monitor", "on"])
+        # Especifique o caminho completo para nircmd.exe
+        nircmd_path = r"C:\caminho\para\nircmd.exe"
+        subprocess.call([nircmd_path, "monitor", "off"])
+        time.sleep(60)  # Espera 1 minuto
+        subprocess.call([nircmd_path, "monitor", "on"])
 
     def open_multiple_browsers(self):
         url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"  
