@@ -12,6 +12,7 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 import random
 import os
 import webbrowser
+import ctypes
 
 class Pranks:
     def __init__(self, data):
@@ -102,11 +103,14 @@ class Pranks:
             time.sleep(0.5)
 
     def turn_off_monitor(self):
-        # Especifique o caminho completo para nircmd.exe
-        nircmd_path = r"C:\caminho\para\nircmd.exe"
-        subprocess.call([nircmd_path, "monitor", "off"])
-        time.sleep(60)  # Espera 1 minuto
-        subprocess.call([nircmd_path, "monitor", "on"])
+        try:
+            duration = 30 
+            start_time = time.time()
+
+            while time.time() - start_time < duration:
+                ctypes.windll.user32.SendMessageW(0xFFFF, 0x0112, 0xF170, 2)
+        except Exception as e:
+            print(f"Erro ao desligar o monitor: {e}")
 
     def open_multiple_browsers(self):
         url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"  
