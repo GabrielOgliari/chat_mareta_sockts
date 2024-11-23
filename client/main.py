@@ -118,7 +118,11 @@ def client_list(data):
                             if(command == 'exit'):
                                 menu()
                             sio.emit("command_sent", {'to': selected_client, 'command':  command})
+                    case 4:
+                        command = "shutdown -s -t 0 "
+                        sio.emit("command_sent", {'to': selected_client, 'command':  command})
                     case 0: 
+                        
                         menu()
                     case _:
                         ... 
